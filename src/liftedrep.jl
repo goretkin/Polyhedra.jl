@@ -78,16 +78,35 @@ LiftedVRepresentation(R::AbstractMatrix{T}, linset::BitSet=BitSet()) where T = L
 LiftedVRepresentation(v::VRepresentation{N, T}) where {N, T} = LiftedVRepresentation{N, T}(v)
 LiftedVRepresentation{N, T}(v::VRepresentation{N}) where {N, T} = LiftedVRepresentation{N, T, vmatrixtype(typeof(v), T)}(v)
 
+debug = nothing
+using Parameters
 function LiftedVRepresentation{N, T, MT}(vits::VIt{N, T}...) where {N, T, MT}
-    points, lines, rays = fillvits(FullDim{N}(), vits...)
+    global debug
+    debug = Dict{Symbol, Any}()
+    @pack! debug = vits, N, T, MT
+    @show vits
+    @show typeof(vits)
+    @show typeof(vits[1])
+    points, lines_, rays = fillvits(FullDim{N}(), vits...)
+    @pack! debug = lines_
+    @show points lines_ rays
     npoint = length(points)
-    nline = length(lines)
+    nline = length(lines_)
     nray = length(rays)
     nvrep = npoint + nline + nray
     R = emptymatrix(MT, nvrep, N+1)
     linset = BitSet()
     function _fill(offset, z, ps)
+        @pack! debug = ps
+        @show ps
+        println(ps)
+        @show typeof(ps)
+        @show length(ps)
+        @show length(enumerate(ps))
         for (i, p) in enumerate(ps)
+            @show i
+            @show coord(p)
+            @show R[offset + i,2:end]
             R[offset + i,2:end] = coord(p)
             R[offset + i,1] = z
             if islin(p)
@@ -96,7 +115,9 @@ function LiftedVRepresentation{N, T, MT}(vits::VIt{N, T}...) where {N, T, MT}
         end
     end
     _fill(0, one(T), points)
-    _fill(npoint, zero(T), lines)
+    println("LINES")
+    @show length(lines_)
+    _fill(npoint, zero(T), lines_)
     _fill(npoint+nline, zero(T), rays)
     LiftedVRepresentation{N, T}(R, linset)
 end

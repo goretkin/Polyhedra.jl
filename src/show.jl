@@ -8,14 +8,8 @@ Base.summary(it::Polyhedra.AbstractRepIterator{N, T, ElemT}) where {N, T, ElemT}
 
 # Inspired from Base.show_vector
 function show_repit(io::IO, v::Polyhedra.AbstractRepIterator, print_prefix::Bool, start_str::String, end_str::String, join_str::String=",")
-    compact, prefix = Base.array_eltype_show_how(v)
     limited = get(io, :limit, false)
-    if compact && !haskey(io, :compact)
-        io = IOContext(io, :compact => compact)
-    end
-    if print_prefix
-        print(io, prefix)
-    end
+    io = IOContext(io, :typeinfo => eltype(v), :compact => true)
     limited = true
     if limited && length(v) > 20
         Base.show_delim_array(io, v, start_str, join_str, " \u2026 " * end_str, false, 1, 20)
