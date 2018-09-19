@@ -93,6 +93,8 @@ function LiftedVRepresentation{N, T, MT}(vits::VIt{N, T}...) where {N, T, MT}
     npoint = length(points)
     nline = length(lines_)
     nray = length(rays)
+    @pack! debug = npoint, nline, nray
+    @show npoint nline nray
     nvrep = npoint + nline + nray
     R = emptymatrix(MT, nvrep, N+1)
     linset = BitSet()
